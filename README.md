@@ -1,0 +1,2 @@
+This is my esphome yaml I built for managing my Sofar HYD 5K-EP inverter over rs485 with an esp32 and a MAX485 adapter. The code should work on any Sofar 3000/5000/6000 EP inverter and is using the most up to date modbus register map as of 2025.
+The code allows automated charging at night with configurable start/stop charging window and charging rate in Homeassistant. It also provides a drop down  for inverter mode Self Use, Time of Use, Peak Shaving and PAssive and sub dropdown for behaviour like Passive (Auto), Passive Charge, Passive Discharge and Passive Export.

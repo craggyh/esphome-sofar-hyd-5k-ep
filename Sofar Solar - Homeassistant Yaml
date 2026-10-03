@@ -275,10 +275,38 @@ views:
         view_layout:
           position: sidebar
   - title: Sofar Solar
-    cards: []
     type: sections
     max_columns: 3
+    dense_section_placement: true
+    theme: Dark - Gray
+    cards: []
     sections:
+      - type: grid
+        cards:
+          - type: entities
+            title: Live Status
+            show_header_toggle: false
+            entities:
+              - entity: sensor.sofarsolar_inverter_status
+                name: Inverter Status
+              - entity: sensor.sofarsolar_battery_mode_string
+                name: Operating Mode
+              - entity: sensor.sofarsolar_passive_submode
+                name: Passive Mode
+              - entity: sensor.sofarsolar_battery_soc
+                name: Battery SOC
+              - entity: sensor.sofarsolar_battery_power
+                name: Battery Power
+              - entity: sensor.sofarsolar_pv_power
+                name: Solar Power
+              - entity: sensor.sofarsolar_ac_power_load
+                name: House Load
+              - entity: sensor.sofarsolar_ac_grid_power
+                name: Grid Power
+              - entity: sensor.sofarsolar_sofar_passive_control_decision
+                name: Passive Decision
+                secondary_info: last-changed
+
       - type: grid
         cards:
           - type: vertical-stack
@@ -288,7 +316,10 @@ views:
                 show_header_toggle: false
                 entities:
                   - entity: select.sofarsolar_battery_inverter_mode
+                    name: Operating Mode
                   - entity: select.sofarsolar_passive_mode_subtype
+                    name: Passive Mode
+
               - type: conditional
                 conditions:
                   - condition: state
@@ -302,12 +333,23 @@ views:
                   cards:
                     - type: entities
                       title: Passive Auto
+                      show_header_toggle: false
                       entities:
-                        - entity: number.sofarsolar_passive_auto_export_preference
-                        - entity: number.sofarsolar_passive_auto_inverter_limit
-                        - entity: number.sofarsolar_passive_auto_max_charge_power
+                        - entity: number.sofarsolar_passive_auto_minimum_reserve_soc
+                          name: Minimum EPS Reserve
+                          icon: mdi:battery-lock
                         - entity: number.sofarsolar_passive_auto_target_soc
+                          name: Headroom Target SOC
+                          icon: mdi:battery-sync
+                        - entity: number.sofarsolar_passive_auto_export_preference
+                          name: Prefer Export
+                        - entity: number.sofarsolar_passive_auto_inverter_limit
+                          name: Inverter Limit
+                        - entity: number.sofarsolar_passive_auto_max_charge_power
+                          name: Maximum Solar Charge Power
                         - entity: switch.sofarsolar_passive_auto_export_recovery
+                          name: Enable Headroom Recovery
+
                     - type: conditional
                       conditions:
                         - condition: state
@@ -315,20 +357,18 @@ views:
                           state: 'on'
                       card:
                         type: entities
-                        title: Export Recovery
+                        title: Headroom Recovery
+                        show_header_toggle: false
                         entities:
-                          - entity: >-
-                              number.sofarsolar_passive_auto_export_recovery_power
-                            name: Export Recovery Power
-                          - entity: >-
-                              number.sofarsolar_passive_auto_export_recovery_pv_threshold
-                            name: Export Recovery  PV Threshold
-                          - entity: >-
-                              number.sofarsolar_passive_auto_export_recovery_start_soc
-                            name: Export Recovery Start SOC
-                          - entity: >-
-                              number.sofarsolar_passive_auto_export_recovery_stop_soc
-                            name: Export Recovery  End SOC
+                          - entity: number.sofarsolar_passive_auto_export_recovery_start_soc
+                            name: Start Recovery at SOC
+                          - entity: number.sofarsolar_passive_auto_export_recovery_stop_soc
+                            name: Stop Recovery at SOC
+                          - entity: number.sofarsolar_passive_auto_export_recovery_pv_threshold
+                            name: Only Recover Below PV
+                          - entity: number.sofarsolar_passive_auto_export_recovery_power
+                            name: Recovery Export Power
+
               - type: conditional
                 conditions:
                   - condition: state
@@ -339,12 +379,14 @@ views:
                     state: Passive Charge
                 card:
                   type: entities
-                  title: Passive Charge
+                  title: Manual Charge
+                  show_header_toggle: false
                   entities:
                     - entity: number.sofarsolar_passive_charge_power
                       name: Charge Power
                     - entity: number.sofarsolar_passive_charge_target_soc
                       name: Charge Target SOC
+
               - type: conditional
                 conditions:
                   - condition: state
@@ -355,14 +397,16 @@ views:
                     state: Passive Discharge
                 card:
                   type: entities
-                  title: Passive Discharge
+                  title: Manual Discharge
+                  show_header_toggle: false
                   entities:
                     - entity: number.sofarsolar_passive_discharge_power
                       name: Discharge Power
                     - entity: number.sofarsolar_passive_discharge_minimum_soc
-                      name: Discharge Min SOC
+                      name: Minimum Battery SOC
                     - entity: number.sofarsolar_passive_discharge_export_power
-                      name: Export Power
+                      name: Allowed Grid Export
+
               - type: conditional
                 conditions:
                   - condition: state
@@ -373,81 +417,162 @@ views:
                     state: Passive Export
                 card:
                   type: entities
-                  title: Passive Export
+                  title: Manual Export
+                  show_header_toggle: false
                   entities:
-                    - entity: number.sofarsolar_passive_export_minimum_soc
-                      name: Export Min SOC
                     - entity: number.sofarsolar_passive_export_power
-              - type: entities
-                title: Passive  Scheduler
-                entities:
-                  - entity: input_datetime.sofar_charge_start_time
-                    name: Scheduled Charge Start Time
-                  - entity: input_datetime.sofar_charge_end_time
-                    name: Scheduled Charge End Time
-                  - entity: number.sofarsolar_scheduled_charge_power
-                    name: Scheduled Charge Power
-                  - entity: number.sofarsolar_scheduled_charge_target_soc
-                    name: Scheduled Charge Target SOC
+                      name: Export Power
+                    - entity: number.sofarsolar_passive_export_minimum_soc
+                      name: Stop at Battery SOC
+
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: select.sofarsolar_battery_inverter_mode
+                    state: Passive
+                card:
+                  type: entities
+                  title: Scheduled Battery Charge
+                  show_header_toggle: false
+                  entities:
+                    - entity: sensor.sofarsolar_scheduled_charge_status
+                      name: Status
+                    - entity: input_datetime.sofar_charge_start_time
+                      name: Start Time
+                    - entity: input_datetime.sofar_charge_end_time
+                      name: End Time
+                    - entity: number.sofarsolar_scheduled_charge_target_soc
+                      name: Target SOC
+                    - entity: number.sofarsolar_scheduled_charge_power
+                      name: Charge Power
+
+      - type: grid
+        cards:
           - type: entities
+            title: Battery
+            show_header_toggle: false
             entities:
-              - entity: sensor.sofarsolar_battery_charge_daily
-              - entity: sensor.sofarsolar_battery_current
-              - entity: sensor.sofarsolar_battery_discharge_daily
-              - entity: sensor.sofarsolar_battery_power
               - entity: sensor.sofarsolar_battery_soc
-              - entity: sensor.sofarsolar_battery_soh
-              - entity: sensor.sofarsolar_battery_temp
+                name: State of Charge
+              - entity: sensor.sofarsolar_battery_power
+                name: Power
               - entity: sensor.sofarsolar_battery_voltage
-            title: Sofar-Solar Battery
+                name: Voltage
+              - entity: sensor.sofarsolar_battery_current
+                name: Current
+              - entity: sensor.sofarsolar_battery_temp
+                name: Temperature
+              - entity: sensor.sofarsolar_battery_soh
+                name: State of Health
+              - entity: sensor.sofarsolar_battery_charge_daily
+                name: Charged Today
+              - entity: sensor.sofarsolar_battery_discharge_daily
+                name: Discharged Today
+
       - type: grid
         cards:
           - type: entities
+            title: Energy Today
+            show_header_toggle: false
             entities:
-              - entity: sensor.sofarsolar_inverter_status
-              - entity: sensor.sofarsolar_scheduled_charge_status
-              - entity: sensor.sofarsolar_battery_mode_string
-              - entity: sensor.sofarsolar_passive_submode
-              - entity: sensor.sofarsolar_inverter_fault_status
-              - entity: sensor.sofarsolar_current_inverter_storage_mode
-                name: Sofarslar Current Mode
-              - entity: sensor.sofarsolar_passive_submode_id
-              - entity: sensor.sofarsolar_minimum_charge_discharge_limit
-              - entity: sensor.sofarsolar_maximum_charge_discharge_limit
-              - entity: sensor.sofarsolar_inverter_temp
-              - entity: sensor.sofarsolar_consumption_daily
-              - entity: sensor.sofarsolar_consumption_total
-              - entity: sensor.sofarsolar_export_daily
-              - entity: sensor.sofarsolar_export_total
-              - entity: sensor.sofarsolar_import_daily
-              - entity: sensor.sofarsolar_import_total
               - entity: sensor.sofarsolar_production_daily
-              - entity: sensor.sofarsolar_production_total
-            title: Sofar-Solar Status
+                name: Solar Production
+              - entity: sensor.sofarsolar_consumption_daily
+                name: House Consumption
+              - entity: sensor.sofarsolar_import_daily
+                name: Grid Import
+              - entity: sensor.sofarsolar_export_daily
+                name: Grid Export
+              - entity: sensor.sofarsolar_battery_charge_daily
+                name: Battery Charged
+              - entity: sensor.sofarsolar_battery_discharge_daily
+                name: Battery Discharged
+
       - type: grid
         cards:
           - type: entities
+            title: Lifetime Energy
+            show_header_toggle: false
             entities:
-              - entity: sensor.sofarsolar_ac_power_load
-              - entity: sensor.sofarsolar_ac_power_load_eps
-              - entity: sensor.sofarsolar_ac_power
-              - entity: sensor.sofarsolar_ac_grid_power
-              - entity: sensor.sofarsolar_ac_current
-              - entity: sensor.sofarsolar_ac_frequency
-              - entity: sensor.sofarsolar_ac_voltage
-            title: Sofar-Solar AC
+              - entity: sensor.sofarsolar_production_total
+                name: Solar Production
+              - entity: sensor.sofarsolar_consumption_total
+                name: Consumption
+              - entity: sensor.sofarsolar_import_total
+                name: Grid Import
+              - entity: sensor.sofarsolar_export_total
+                name: Grid Export
+
+      - type: grid
+        cards:
           - type: entities
+            title: Solar Array
+            show_header_toggle: false
             entities:
               - entity: sensor.sofarsolar_pv_power
+                name: Total PV Power
               - entity: sensor.sofarsolar_power_dc1
-              - entity: sensor.sofarsolar_power_dc2
-              - entity: sensor.sofarsolar_current_dc1
-              - entity: sensor.sofarsolar_current_dc2
+                name: PV1 SW Power
               - entity: sensor.sofarsolar_voltage_dc1
+                name: PV1 SW Voltage
+              - entity: sensor.sofarsolar_current_dc1
+                name: PV1 SW Current
+              - entity: sensor.sofarsolar_power_dc2
+                name: PV2 NE Power
               - entity: sensor.sofarsolar_voltage_dc2
-            title: Sofar-Solar PV
-    dense_section_placement: true
-    theme: Dark - Gray
+                name: PV2 NE Voltage
+              - entity: sensor.sofarsolar_current_dc2
+                name: PV2 NE Current
+
+      - type: grid
+        cards:
+          - type: entities
+            title: AC / Grid
+            show_header_toggle: false
+            entities:
+              - entity: sensor.sofarsolar_ac_power_load
+                name: House Load
+              - entity: sensor.sofarsolar_ac_power_load_eps
+                name: EPS Load
+              - entity: sensor.sofarsolar_ac_power
+                name: Inverter Output
+              - entity: sensor.sofarsolar_ac_grid_power
+                name: Grid Power
+              - entity: sensor.sofarsolar_ac_voltage
+                name: Grid Voltage
+              - entity: sensor.sofarsolar_ac_frequency
+                name: Grid Frequency
+              - entity: sensor.sofarsolar_ac_current
+                name: AC Current
+
+      - type: grid
+        cards:
+          - type: entities
+            title: Diagnostics
+            show_header_toggle: false
+            entities:
+              - entity: sensor.sofarsolar_inverter_fault_status
+                name: Fault Status
+              - entity: sensor.sofarsolar_sofar_passive_control_decision
+                name: Control Decision
+                secondary_info: last-changed
+              - entity: sensor.sofarsolar_sofar_passive_control_register_target
+                name: Register Target
+                secondary_info: last-changed
+              - entity: sensor.sofarsolar_current_inverter_storage_mode
+                name: Actual Storage Mode
+              - entity: sensor.sofarsolar_passive_submode_id
+                name: Passive Submode ID
+              - entity: sensor.sofarsolar_minimum_charge_discharge_limit
+                name: Minimum Charge / Discharge Limit
+              - entity: sensor.sofarsolar_maximum_charge_discharge_limit
+                name: Maximum Charge / Discharge Limit
+              - entity: sensor.sofarsolar_inverter_temp
+                name: Inverter Temperature
+              - entity: sensor.sofarsolar_wifi_signal
+                name: ESP Wi-Fi Signal
+              - entity: sensor.sofarsolar_uptime
+                name: ESP Uptime
   - title: Solar Forecast
     path: solar
     type: sections

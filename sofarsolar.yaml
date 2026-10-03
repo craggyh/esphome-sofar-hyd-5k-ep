@@ -35,6 +35,8 @@ esp32:
 
 substitutions:
   devicename: "sofarsolar"
+  wifi_ssid: ""
+  wifi_password: ""
 
 # Enable logging
 logger:
@@ -61,8 +63,8 @@ time:
     id: esptime
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
   output_power: 20.5db
   manual_ip:
     static_ip: 10.10.50.99

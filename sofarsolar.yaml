@@ -1343,7 +1343,7 @@ sensor:
     filters:
       - multiply: 10
       - lambda: |-
-          if (x < -120000 || x > 12000) {
+          if (x < -12000 || x > 12000) {
             return NAN;  // Ignore invalid or extreme readings
           }
           return x;
@@ -1390,11 +1390,11 @@ sensor:
     address: 0x0504
     unit_of_measurement: "W"
     device_class: "power"
-    value_type: U_WORD
+    value_type: S_WORD
     filters:
-      - multiply: 10      
+      - multiply: 10
       - lambda: |-
-          if (x < -500 || x > 500) {
+          if (x < -6000 || x > 6000) {
             return NAN;  // Ignore invalid or extreme readings
           }
           return x;
@@ -1761,7 +1761,7 @@ sensor:
     id: inverter_cycle_bat
     icon: "mdi:car-battery"
     register_type: holding
-    address: 0x9073
+    address: 0x060A
     unit_of_measurement: "Cycles"
     value_type: U_WORD
 
@@ -1771,10 +1771,10 @@ sensor:
     id: inverter_battery_charge_daily
     state_class: total_increasing
     register_type: holding
-    address: 0x0695
+    address: 0x0694
     unit_of_measurement: "kWh"
     device_class: "energy"
-    value_type: S_WORD
+    value_type: U_DWORD
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
@@ -1810,10 +1810,10 @@ sensor:
     id: inverter_battery_discharge_daily
     state_class: total_increasing
     register_type: holding
-    address: 0x0699
+    address: 0x0698
     unit_of_measurement: "kWh"
     device_class: "energy"
-    value_type: S_WORD
+    value_type: U_DWORD
     accuracy_decimals: 2
     filters:
       - multiply: 0.01

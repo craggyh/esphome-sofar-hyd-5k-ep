@@ -1,0 +1,685 @@
+views:
+  - title: Energy
+    path: energy
+    type: sidebar
+    badges: []
+    cards:
+      - type: custom:vertical-stack-in-card
+        cards:
+          - cardstyle: full
+            wide: true
+            large_font: true
+            show_solar: true
+            show_battery: true
+            show_grid: true
+            center_no_grid: false
+            card_height: 100%
+            card_width: 100%
+            decimal_places: 2
+            decimal_places_energy: 1
+            dynamic_line_width: true
+            max_line_width: 4
+            min_line_width: 1
+            inverter:
+              model: sofar
+              modern: true
+              autarky: energy
+              auto_scale: true
+            battery:
+              energy: 10240
+              show_daily: true
+              invert_power: true
+              dynamic_colour: true
+              show_absolute: false
+              animate: true
+              linear_gradient: true
+              charge_colour: '#008040'
+              colour: '#408080'
+              show_remaining_energy: true
+              auto_scale: true
+              shutdown_soc: 20
+              remaining_energy_to_shutdown: true
+              hide_soc: false
+              invert_flow: false
+              shutdown_soc_offgrid: 10
+              count: 1
+            battery2:
+              show_absolute: false
+            solar:
+              show_daily: true
+              display_mode: 2
+              mppts: 2
+              dynamic_colour: true
+              colour: '#ffa87d'
+              auto_scale: true
+              pv1_name: PV1 SW
+              pv2_name: PV2 NE
+            load:
+              show_daily: true
+              show_aux: false
+              dynamic_icon: true
+              invert_load: false
+              dynamic_colour: true
+              auto_scale: true
+              colour: '#00d7d7'
+              additional_loads: 4
+              load2_name: Workshop
+              load3_name: Mains Circuit
+              load4_name: Lights Circuit
+              load1_name: Garage
+              essential_name: Home
+              invert_flow: false
+            grid:
+              show_daily_buy: true
+              show_daily_sell: true
+              invert_grid: false
+              show_nonessential: false
+              show_absolute: false
+              auto_scale: true
+              invert_flow: false
+            type: custom:sunsynk-power-flow-card
+            entities:
+              batchargeday_70: sensor.sofarsolar_battery_charge_daily
+              batdischargeday_71: sensor.sofarsolar_battery_discharge_daily
+              loadday_84: sensor.sofarsolar_consumption_daily
+              grid_buy_day_76: sensor.sofarsolar_import_daily
+              grid_sell_day_77: sensor.sofarsolar_export_daily
+              solarday_108: sensor.sofarsolar_production_daily
+              inverter_grid_voltage_154: sensor.sofarsolar_ac_voltage
+              battery_voltage_183: sensor.sofarsolar_battery_voltage
+              battery_soc_184: sensor.sofarsolar_battery_soc
+              battery_current_191: sensor.sofarsolar_battery_current
+              remaining_solar: sensor.solcast_pv_forecast_forecast_remaining_today
+              inverter_status_59: sensor.next_run
+              day_pv_energy_108: sensor.sofarsolar_production_daily
+              day_battery_discharge_71: sensor.sofarsolar_battery_discharge_daily
+              battery_power_190: sensor.sofarsolar_battery_power
+              battery_temp_182: sensor.sofarsolar_battery_temp
+              day_battery_charge_70: sensor.sofarsolar_battery_charge_daily
+              battery_soh: sensor.sofarsolar_battery_soh
+              day_grid_import_76: sensor.sofarsolar_import_daily
+              day_grid_export_77: sensor.sofarsolar_export_daily
+              day_load_energy_84: sensor.sofarsolar_consumption_daily
+              pv1_current_110: sensor.sofarsolar_current_dc1
+              pv2_current_112: sensor.sofarsolar_current_dc2
+              total_pv_generation: sensor.sofarsolar_production_total
+              grid_power_169: sensor.sofarsolar_ac_grid_power
+              radiator_temp_91: sensor.sofarsolar_inverter_temp
+              load_frequency_192: sensor.sofarsolar_ac_frequency
+              pv1_power_186: sensor.sofarsolar_power_dc1
+              pv2_power_187: sensor.sofarsolar_power_dc2
+              pv1_voltage_109: sensor.sofarsolar_voltage_dc1
+              pv2_voltage_111: sensor.sofarsolar_voltage_dc2
+              essential_power: sensor.sofarsolar_ac_power_load
+              inverter_power_175: sensor.sofarsolar_ac_power
+              pv_total: sensor.sofarsolar_pv_power
+              solar_sell_247: sensor.sofarsolar_consumption_daily
+              environment_temp: sensor.weather_station_outside_temperature
+              load_power_L1: sensor.workshop_active_power
+              essential_load1: sensor.garage_active_power
+              essential_load2: sensor.workshop_active_power
+              essential_load4: sensor.lights_circuit_active_power
+              essential_load3: sensor.mains_circuit_active_power
+              inverter_voltage_154: sensor.sofarsolar_ac_voltage
+              grid_connected_status_194: sensor.sofarsolar_inverter_status
+              grid_ct_power_172: sensor.sofarsolar_ac_grid_power
+              inverter_current_164: sensor.sofarsolar_ac_current
+            title_colour: '#000000'
+      - cards:
+          - entities:
+              - entity: sensor.total_active_power
+                index: 0
+                name: Total
+              - entity: sensor.house_active_power
+                index: 0
+                name: House
+              - entity: sensor.mains_circuit_active_power
+                index: 0
+                name: Mains Circuit
+              - entity: sensor.lights_circuit_active_power
+                index: 0
+                name: Lights Circuit
+              - entity: sensor.garage_active_power
+                index: 0
+                name: Garage
+              - entity: sensor.workshop_active_power
+                index: 0
+                name: Workshop
+            hours_to_show: 8
+            icon: mdi:server
+            line_width: 1
+            points_per_hour: 30
+            type: custom:mini-graph-card
+        title: Active Energy
+        type: custom:stack-in-card
+        view_layout:
+          position: main
+      - type: energy-usage-graph
+        title: Energy Usage
+      - chart_type: line
+        period: hour
+        type: statistics-graph
+        entities:
+          - entity: sensor.sofarsolar_production_daily
+            name: Total
+          - entity: sensor.sofarsolar_dc_1_daily_energy
+            name: PV 1
+          - entity: sensor.sofarsolar_dc_2_daily_energy
+            name: PV 2
+        title: Solar  Production Hourly
+        stat_types:
+          - change
+        logarithmic_scale: false
+        days_to_show: 1
+        hide_legend: false
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: energy-solar-graph
+            title: Solar Forecast
+          - type: entities
+            entities:
+              - entity: sensor.solcast_pv_forecast_forecast_today
+                name: Forecast Today
+              - entity: sensor.solcast_pv_forecast_forecast_tomorrow
+                name: Forecast Tomorrow
+              - entity: sensor.solcast_pv_forecast_peak_time_today
+                name: Peak Time Today
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - entity: sensor.sofarsolar_production_daily
+            name: Daily Total
+          - entity: sensor.sofarsolar_dc_1_daily_energy
+            name: PV 1
+          - entity: sensor.sofarsolar_dc_2_daily_energy
+            name: PV 2
+          - sensor.daily_net_energy
+        title: Solar  Production Daily
+        stat_types:
+          - state
+        logarithmic_scale: false
+        hide_legend: false
+        days_to_show: 4
+      - type: entities
+        entities:
+          - entity: sensor.sofarsolar_inverter_status
+          - entity: sensor.sofarsolar_passive_submode
+          - entity: sensor.sofarsolar_sofar_passive_control_decision
+            secondary_info: last-changed
+            name: Passive Status
+          - entity: sensor.sofarsolar_sofar_passive_control_register_target
+            secondary_info: last-changed
+            name: Passive Control Register
+        title: Inverter Status
+        view_layout:
+          position: sidebar
+      - type: energy-date-selection
+        view_layout:
+          position: sidebar
+      - type: energy-sources-table
+        title: Energy Sources
+        view_layout:
+          position: sidebar
+      - cards:
+          - entities:
+              - entity: sensor.total_daily_energy_metered
+                index: 0
+                name: Total
+            hours_to_show: 8
+            icon: mdi:server
+            line_width: 3
+            points_per_hour: 20
+            type: custom:mini-graph-card
+        title: Daily Energy
+        type: custom:stack-in-card
+        view_layout:
+          position: sidebar
+      - title: Monthly Energy
+        cards:
+          - entities:
+              - entity: sensor.total_monthly_energy
+            hours_to_show: 8
+            icon: mdi:server
+            line_width: 3
+            points_per_hour: 30
+            type: custom:mini-graph-card
+        type: custom:stack-in-card
+        view_layout:
+          position: sidebar
+      - type: energy-carbon-consumed-gauge
+        view_layout:
+          position: sidebar
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - entity: sensor.total_daily_energy_peak
+            name: Grid Import Peak
+          - entity: sensor.total_daily_energy_off_peak
+            name: Grid Import OffPeak
+          - sensor.sofarsolar_import_daily
+          - sensor.sofarsolar_export_daily
+          - sensor.grid_net_export_daily
+        title: AC Grid Power
+        stat_types:
+          - change
+        logarithmic_scale: false
+        days_to_show: 5
+        expand_legend: false
+        energy_date_selection: false
+      - type: energy-grid-neutrality-gauge
+        view_layout:
+          position: sidebar
+      - type: energy-solar-consumed-gauge
+        view_layout:
+          position: sidebar
+  - title: Sofar Solar
+    cards: []
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: entities
+                title: Inverter Control
+                show_header_toggle: false
+                entities:
+                  - entity: select.sofarsolar_battery_inverter_mode
+                  - entity: select.sofarsolar_passive_mode_subtype
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: select.sofarsolar_battery_inverter_mode
+                    state: Passive
+                  - condition: state
+                    entity: select.sofarsolar_passive_mode_subtype
+                    state: Passive (Auto)
+                card:
+                  type: vertical-stack
+                  cards:
+                    - type: entities
+                      title: Passive Auto
+                      entities:
+                        - entity: number.sofarsolar_passive_auto_export_preference
+                        - entity: number.sofarsolar_passive_auto_inverter_limit
+                        - entity: number.sofarsolar_passive_auto_max_charge_power
+                        - entity: number.sofarsolar_passive_auto_target_soc
+                        - entity: switch.sofarsolar_passive_auto_export_recovery
+                    - type: conditional
+                      conditions:
+                        - condition: state
+                          entity: switch.sofarsolar_passive_auto_export_recovery
+                          state: 'on'
+                      card:
+                        type: entities
+                        title: Export Recovery
+                        entities:
+                          - entity: >-
+                              number.sofarsolar_passive_auto_export_recovery_power
+                            name: Export Recovery Power
+                          - entity: >-
+                              number.sofarsolar_passive_auto_export_recovery_pv_threshold
+                            name: Export Recovery  PV Threshold
+                          - entity: >-
+                              number.sofarsolar_passive_auto_export_recovery_start_soc
+                            name: Export Recovery Start SOC
+                          - entity: >-
+                              number.sofarsolar_passive_auto_export_recovery_stop_soc
+                            name: Export Recovery  End SOC
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: select.sofarsolar_battery_inverter_mode
+                    state: Passive
+                  - condition: state
+                    entity: select.sofarsolar_passive_mode_subtype
+                    state: Passive Charge
+                card:
+                  type: entities
+                  title: Passive Charge
+                  entities:
+                    - entity: number.sofarsolar_passive_charge_power
+                      name: Charge Power
+                    - entity: number.sofarsolar_passive_charge_target_soc
+                      name: Charge Target SOC
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: select.sofarsolar_battery_inverter_mode
+                    state: Passive
+                  - condition: state
+                    entity: select.sofarsolar_passive_mode_subtype
+                    state: Passive Discharge
+                card:
+                  type: entities
+                  title: Passive Discharge
+                  entities:
+                    - entity: number.sofarsolar_passive_discharge_power
+                      name: Discharge Power
+                    - entity: number.sofarsolar_passive_discharge_minimum_soc
+                      name: Discharge Min SOC
+                    - entity: number.sofarsolar_passive_discharge_export_power
+                      name: Export Power
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: select.sofarsolar_battery_inverter_mode
+                    state: Passive
+                  - condition: state
+                    entity: select.sofarsolar_passive_mode_subtype
+                    state: Passive Export
+                card:
+                  type: entities
+                  title: Passive Export
+                  entities:
+                    - entity: number.sofarsolar_passive_export_minimum_soc
+                      name: Export Min SOC
+                    - entity: number.sofarsolar_passive_export_power
+              - type: entities
+                title: Passive  Scheduler
+                entities:
+                  - entity: input_datetime.sofar_charge_start_time
+                    name: Scheduled Charge Start Time
+                  - entity: input_datetime.sofar_charge_end_time
+                    name: Scheduled Charge End Time
+                  - entity: number.sofarsolar_scheduled_charge_power
+                    name: Scheduled Charge Power
+                  - entity: number.sofarsolar_scheduled_charge_target_soc
+                    name: Scheduled Charge Target SOC
+          - type: entities
+            entities:
+              - entity: sensor.sofarsolar_battery_charge_daily
+              - entity: sensor.sofarsolar_battery_current
+              - entity: sensor.sofarsolar_battery_discharge_daily
+              - entity: sensor.sofarsolar_battery_power
+              - entity: sensor.sofarsolar_battery_soc
+              - entity: sensor.sofarsolar_battery_soh
+              - entity: sensor.sofarsolar_battery_temp
+              - entity: sensor.sofarsolar_battery_voltage
+            title: Sofar-Solar Battery
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.sofarsolar_inverter_status
+              - entity: sensor.sofarsolar_scheduled_charge_status
+              - entity: sensor.sofarsolar_battery_mode_string
+              - entity: sensor.sofarsolar_passive_submode
+              - entity: sensor.sofarsolar_inverter_fault_status
+              - entity: sensor.sofarsolar_current_inverter_storage_mode
+                name: Sofarslar Current Mode
+              - entity: sensor.sofarsolar_passive_submode_id
+              - entity: sensor.sofarsolar_minimum_charge_discharge_limit
+              - entity: sensor.sofarsolar_maximum_charge_discharge_limit
+              - entity: sensor.sofarsolar_inverter_temp
+              - entity: sensor.sofarsolar_consumption_daily
+              - entity: sensor.sofarsolar_consumption_total
+              - entity: sensor.sofarsolar_export_daily
+              - entity: sensor.sofarsolar_export_total
+              - entity: sensor.sofarsolar_import_daily
+              - entity: sensor.sofarsolar_import_total
+              - entity: sensor.sofarsolar_production_daily
+              - entity: sensor.sofarsolar_production_total
+            title: Sofar-Solar Status
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.sofarsolar_ac_power_load
+              - entity: sensor.sofarsolar_ac_power_load_eps
+              - entity: sensor.sofarsolar_ac_power
+              - entity: sensor.sofarsolar_ac_grid_power
+              - entity: sensor.sofarsolar_ac_current
+              - entity: sensor.sofarsolar_ac_frequency
+              - entity: sensor.sofarsolar_ac_voltage
+            title: Sofar-Solar AC
+          - type: entities
+            entities:
+              - entity: sensor.sofarsolar_pv_power
+              - entity: sensor.sofarsolar_power_dc1
+              - entity: sensor.sofarsolar_power_dc2
+              - entity: sensor.sofarsolar_current_dc1
+              - entity: sensor.sofarsolar_current_dc2
+              - entity: sensor.sofarsolar_voltage_dc1
+              - entity: sensor.sofarsolar_voltage_dc2
+            title: Sofar-Solar PV
+    dense_section_placement: true
+    theme: Dark - Gray
+  - title: Solar Forecast
+    path: solar
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: energy-solar-graph
+            title: Solar Forecast Today
+          - type: entities
+            entities:
+              - entity: sensor.solcast_pv_forecast_api_last_polled
+                name: API Last Polled
+              - entity: sensor.solcast_pv_forecast_api_limit
+                name: API Limit
+              - entity: sensor.solcast_pv_forecast_api_used
+                name: API Used
+              - entity: sensor.solcast_pv_forecast_hard_limit_set
+                name: Hard Limit Set
+              - sensor.home_ne
+              - sensor.home_sw
+            title: API Stats
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.solcast_pv_forecast_forecast_next_hour
+                name: Forecast Next Hour
+              - entity: sensor.solcast_pv_forecast_forecast_remaining_today
+                name: Forecast Remaining Today
+              - entity: sensor.solcast_pv_forecast_forecast_this_hour
+                name: Forecast This Hour
+              - entity: sensor.solcast_pv_forecast_forecast_today
+                name: Forecast Today
+              - entity: sensor.solcast_pv_forecast_forecast_tomorrow
+                name: Forecast Tomorrow
+              - entity: sensor.solcast_pv_forecast_peak_forecast_today
+                name: Peak Forecast Today
+              - entity: sensor.solcast_pv_forecast_peak_forecast_tomorrow
+                name: Peak Forecast Tomorrow
+              - entity: sensor.solcast_pv_forecast_peak_time_today
+                name: Peak Time Today
+              - entity: sensor.solcast_pv_forecast_peak_time_tomorrow
+                name: Peak Time Tomorrow
+              - entity: sensor.solcast_pv_forecast_power_in_1_hour
+                name: Power in 1 Hour
+              - entity: sensor.solcast_pv_forecast_power_in_30_minutes
+                name: Power in 30 Minutes
+              - entity: sensor.solcast_pv_forecast_power_now
+                name: Power Now
+            title: Solcast PV Forecast
+    cards: []
+    header:
+      layout: responsive
+      badges_position: bottom
+  - title: Devices
+    path: devices
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: energy-devices-graph
+          - type: glance
+            entities:
+              - entity: sensor.dish_washer_voltage
+                name: Running
+              - entity: sensor.dish_washer_power
+                name: Wattage
+              - entity: sensor.dish_washer_total_daily_energy
+                name: Power
+            title: 'Dish Washer '
+          - type: entities
+            entities:
+              - entity: sensor.tumble_dryer_power
+                name: Power
+              - entity: sensor.tumble_dryer_total_daily_energy
+                name: Daily Energy
+            title: Tumble Dryer
+          - type: entities
+            entities:
+              - entity: sensor.washing_machine_wattage
+              - entity: sensor.washing_machine_total_daily_energy
+                name: Daily Energy
+            title: Washing Machine
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.pump_power
+              - entity: sensor.percolation_pump_total_daily_energy
+                name: Daily Energy
+            title: Percolation Pump
+          - type: horizontal-stack
+            cards:
+              - show_name: true
+                show_icon: true
+                show_state: true
+                type: glance
+                entities:
+                  - entity: sensor.pond_wattage
+                  - entity: sensor.pond_total_daily_energy
+                  - entity: sensor.pond_pump_power
+                  - entity: sensor.pond_pump_total_daily_energy
+                  - entity: sensor.pond_uv_filter_power
+                    name: UV Filter Power
+                  - entity: sensor.pond_uv_total_daily_energy
+                    name: UV Filter Daily Energy
+                  - entity: sensor.pond_fountain_power
+                  - entity: sensor.pond_fountain_total_daily_energy
+                  - entity: sensor.pond_uv_filter_2_power
+                  - entity: sensor.pond_uv_2_total_daily_energy
+                title: Pond
+                columns: 4
+          - type: glance
+            entities:
+              - entity: sensor.patio_active_power
+              - entity: sensor.patio_total_daily_energy
+            title: Patio Power
+          - type: entities
+            entities:
+              - entity: sensor.layzspa_today
+            title: Hot Tub
+            show_header_toggle: false
+      - type: grid
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.sitting_room_power
+              - entity: sensor.sitting_room_total_daily_energy
+              - entity: sensor.sitting_room_voltage
+            title: Sitting Room
+      - type: grid
+        cards:
+          - type: glance
+            entities:
+              - entity: sensor.craigues_desk_power
+              - entity: sensor.craigues_desk_total_daily_energy
+              - entity: sensor.office_ups_battery_charge
+            title: Office
+          - type: horizontal-stack
+            cards:
+              - type: glance
+                entities:
+                  - entity: sensor.comms_cabinet_voltage
+                  - entity: sensor.comms_cabinet_power
+                  - entity: sensor.comms_cabinet_total_daily_energy
+                title: Comms Cabinet
+          - type: horizontal-stack
+            cards:
+              - type: entities
+                entities:
+                  - entity: sensor.server_cabinet_voltage
+                  - entity: sensor.server_cabinet_wattage
+                  - entity: sensor.server_cabinet_total_daily_energy
+                title: Server Cabinet
+      - type: grid
+        cards:
+          - type: heading
+            heading: New section
+    max_columns: 2
+    cards: []
+  - title: Energy Monitoring
+    path: shelly-pro-3-em
+    cards:
+      - type: entities
+        entities:
+          - entity: sensor.workshop_apparent_power
+          - entity: sensor.workshop_power_factor
+          - entity: sensor.workshop_total_active_energy
+          - entity: sensor.workshop_active_power
+        title: Phase A (Workshop)
+      - type: entities
+        entities:
+          - entity: sensor.garage_apparent_power
+          - entity: sensor.garage_power_factor
+          - entity: sensor.garage_total_active_energy
+          - entity: sensor.garage_active_power
+        title: Phase B (Garage)
+      - type: entities
+        entities:
+          - entity: sensor.house_apparent_power
+          - entity: sensor.house_power_factor
+          - entity: sensor.house_total_active_energy
+          - entity: sensor.house_active_power_2
+        title: Phase C (House)
+      - type: entities
+        entities:
+          - entity: sensor.energy_monitor_total_active_returned_energy
+          - entity: sensor.energy_monitor_total_apparent_power
+          - entity: sensor.energy_monitor_total_current
+          - entity: sensor.energy_monitor_temperature
+            name: Temperature
+          - entity: sensor.total_active_power
+          - entity: sensor.total_daily_energy
+        title: Shelly Pro 3 EM
+        view_layout:
+          position: sidebar
+      - graph: line
+        type: sensor
+        entity: sensor.total_active_power
+        detail: 2
+        hours_to_show: 4
+        view_layout:
+          position: sidebar
+      - graph: line
+        type: sensor
+        entity: sensor.energy_monitor_total_current
+        detail: 2
+        hours_to_show: 4
+        view_layout:
+          position: sidebar
+      - cards:
+          - entities:
+              - entity: sensor.house_voltage
+                name: Total
+            hours_to_show: 8
+            icon: mdi:server
+            line_width: 3
+            points_per_hour: 30
+            type: custom:mini-graph-card
+        title: Mains Voltage
+        type: custom:stack-in-card
+        view_layout:
+          position: sidebar
+      - type: entities
+        entities:
+          - entity: sensor.house_active_power
+          - entity: sensor.house_daily_energy
+          - entity: sensor.house_voltage
+          - entity: sensor.lights_circuit_active_power
+          - entity: sensor.lights_circuit_daily_energy
+          - entity: sensor.mains_circuit_active_power
+          - entity: sensor.mains_circuit_daily_energy
+        title: House Energy Monitor
+    type: sidebar

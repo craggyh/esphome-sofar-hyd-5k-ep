@@ -132,6 +132,11 @@ globals:
     restore_value: false
     initial_value: 'false'
 
+  - id: passive_auto_reserve_active
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
   - id: passive_auto_export_preference_value
     type: float
     restore_value: true
@@ -154,6 +159,17 @@ globals:
 
 
 number:
+  - platform: template
+    name: "Passive Auto Minimum Reserve SOC"
+    id: passive_auto_min_reserve_soc
+    min_value: 5
+    max_value: 95
+    step: 1
+    unit_of_measurement: "%"
+    optimistic: true
+    restore_value: true
+    initial_value: 20
+
   - platform: template
     name: "Passive Auto Target SOC"
     id: passive_auto_target_soc
@@ -698,25 +714,61 @@ interval:
 
           // Passive Auto + Scheduled Charge
           auto now = id(esptime).now();
-          int now_minutes = now.hour * 60 + now.minute;
-          int start_minutes = (int)id(scheduled_charge_start_hour).state * 60 + (int)id(scheduled_charge_start_minute).state;
-          int end_minutes = (int)id(scheduled_charge_end_hour).state * 60 + (int)id(scheduled_charge_end_minute).state;
+
+          float start_hour = id(scheduled_charge_start_hour).state;
+          float start_minute = id(scheduled_charge_start_minute).state;
+          float end_hour = id(scheduled_charge_end_hour).state;
+          float end_minute = id(scheduled_charge_end_minute).state;
+
+          bool schedule_time_valid =
+              !isnan(start_hour) && !isnan(start_minute) &&
+              !isnan(end_hour) && !isnan(end_minute) &&
+              start_hour >= 0 && start_hour <= 23 &&
+              end_hour >= 0 && end_hour <= 23 &&
+              start_minute >= 0 && start_minute <= 59 &&
+              end_minute >= 0 && end_minute <= 59;
+
+          int now_minutes = now.is_valid() ? (now.hour * 60 + now.minute) : 0;
+          int start_minutes = schedule_time_valid ? ((int)start_hour * 60 + (int)start_minute) : 0;
+          int end_minutes = schedule_time_valid ? ((int)end_hour * 60 + (int)end_minute) : 0;
 
           float soc = id(inverter_soc_bat).state;
           float scheduled_target_soc = id(scheduled_charge_target_soc).state;
           float passive_auto_target_soc_setting = id(passive_auto_target_soc_value);
+          float reserve_soc = id(passive_auto_min_reserve_soc).state;
           float pv = id(inverter_pv_power).state;
           float house_load_w = id(inverter_ac_power_load).state;
 
-          if (isnan(soc)) soc = 0;
+          if (isnan(soc) || soc < 0 || soc > 100) soc = 0;
           if (isnan(scheduled_target_soc)) scheduled_target_soc = 100;
           if (isnan(passive_auto_target_soc_setting)) passive_auto_target_soc_setting = 50;
+          if (isnan(reserve_soc)) reserve_soc = 20;
+          if (reserve_soc < 5) reserve_soc = 5;
+          if (reserve_soc > 95) reserve_soc = 95;
           if (isnan(pv) || pv < 0) pv = 0;
           if (isnan(house_load_w) || house_load_w < 0) house_load_w = 0;
 
-          bool within_schedule = (start_minutes <= end_minutes)
-              ? (now_minutes >= start_minutes && now_minutes < end_minutes)
-              : (now_minutes >= start_minutes || now_minutes < end_minutes);
+          bool reserve_active = id(passive_auto_reserve_active);
+          if (!reserve_active && soc <= reserve_soc) {
+            id(passive_auto_reserve_active) = true;
+            reserve_active = true;
+            ESP_LOGI("passive_auto_reserve",
+                     "Reserve protection active: SOC %.1f%% <= reserve %.1f%%",
+                     soc, reserve_soc);
+          } else if (reserve_active && soc >= (reserve_soc + 2.0f)) {
+            id(passive_auto_reserve_active) = false;
+            reserve_active = false;
+            ESP_LOGI("passive_auto_reserve",
+                     "Reserve protection released: SOC %.1f%% >= %.1f%%",
+                     soc, reserve_soc + 2.0f);
+          }
+
+          bool within_schedule = false;
+          if (now.is_valid() && schedule_time_valid && start_minutes != end_minutes) {
+            within_schedule = (start_minutes < end_minutes)
+                ? (now_minutes >= start_minutes && now_minutes < end_minutes)
+                : (now_minutes >= start_minutes || now_minutes < end_minutes);
+          }
 
           int32_t gdes = 0;
           int32_t blo = 0;
@@ -803,10 +855,15 @@ interval:
             if (isnan(recovery_power)) recovery_power = 2000;
             if (isnan(recovery_pv_threshold)) recovery_pv_threshold = 4500;
 
+            if (recovery_stop_soc >= recovery_start_soc) {
+              recovery_stop_soc = recovery_start_soc - 1.0f;
+            }
+
+            float effective_recovery_stop_soc = std::max(recovery_stop_soc, reserve_soc);
             bool pv_low_enough_for_recovery = pv < recovery_pv_threshold;
 
             if (recovery_enabled) {
-              if (!recovery_active && soc >= recovery_start_soc && pv_low_enough_for_recovery) {
+              if (!reserve_active && !recovery_active && soc >= recovery_start_soc && pv_low_enough_for_recovery) {
                 id(passive_auto_export_recovery_active) = true;
                 recovery_active = true;
 
@@ -815,7 +872,7 @@ interval:
                          soc, recovery_start_soc, pv, recovery_pv_threshold);
               }
 
-              if (recovery_active && (soc <= recovery_stop_soc || pv_near_limit)) {
+              if (recovery_active && (soc <= effective_recovery_stop_soc || pv_near_limit || reserve_active)) {
                 id(passive_auto_export_recovery_active) = false;
                 recovery_active = false;
 
@@ -847,7 +904,7 @@ interval:
                        "Active → exporting %dW. SOC %.1f%%, PV %.0fW, Load %.0fW",
                        export_power, soc, pv, house_load_w);
 
-              } else if (pv_near_limit) {
+            } else if (pv_near_limit) {
               if (battery_full) {
                 blo = 0;
                 bup = 0;
@@ -857,43 +914,61 @@ interval:
                 ESP_LOGI("passive_auto",
                          "Near limit but battery full → hold battery. PV=%.0fW Load=%.0fW SOC=%.1f%%",
                          pv, house_load_w, soc);
-              }
-              else {
-                // existing calculated_charge_w logic goes here
-              }
-              float calculated_charge_w = std::max(clipping_surplus_w, preference_charge_w);
-
-              if (calculated_charge_w < min_harvest_charge_w) calculated_charge_w = min_harvest_charge_w;
-              if (calculated_charge_w > max_charge_w) calculated_charge_w = max_charge_w;
-              if (calculated_charge_w > available_pv_after_load) calculated_charge_w = available_pv_after_load;
-              if (calculated_charge_w < 0) calculated_charge_w = 0;
-
-              int32_t charge_power = ((int32_t)(calculated_charge_w / 100.0f)) * 100;
-              if (charge_power < min_write_charge_w) charge_power = 0;
-
-              if (charge_power > 0) {
-                blo = charge_power;
-                bup = charge_power;
-
-                publish_decision("Passive Auto - near inverter limit, charging to absorb surplus");
-
-                ESP_LOGI("passive_auto",
-                         "Near limit → charge %dW. Target SOC ignored. PV=%.0fW Load=%.0fW InvLimit=%.0fW ExportPref=%.1f%% SOC=%.1f%% Target=%.1f%%",
-                         charge_power, pv, house_load_w, inverter_limit_w, export_preference, soc, passive_auto_target_soc_setting);
               } else {
-                blo = -5000;
-                bup = 5000;
+                float calculated_charge_w = std::max(clipping_surplus_w, preference_charge_w);
 
-                publish_decision("Passive Auto - near limit but no useful surplus, released");
+                if (calculated_charge_w < min_harvest_charge_w) calculated_charge_w = min_harvest_charge_w;
+                if (calculated_charge_w > max_charge_w) calculated_charge_w = max_charge_w;
+                if (calculated_charge_w > available_pv_after_load) calculated_charge_w = available_pv_after_load;
+                if (calculated_charge_w < 0) calculated_charge_w = 0;
 
-                ESP_LOGI("passive_auto",
-                         "Near limit but no useful charge → release. PV=%.0fW Load=%.0fW SOC=%.1f%%",
-                         pv, house_load_w, soc);
+                int32_t charge_power = ((int32_t)(calculated_charge_w / 100.0f)) * 100;
+                if (charge_power < min_write_charge_w) charge_power = 0;
+
+                if (charge_power > 0) {
+                  blo = charge_power;
+                  bup = charge_power;
+
+                  publish_decision("Passive Auto - near inverter limit, charging to absorb surplus");
+
+                  ESP_LOGI("passive_auto",
+                           "Near limit → charge %dW. Target SOC ignored. PV=%.0fW Load=%.0fW InvLimit=%.0fW ExportPref=%.1f%% SOC=%.1f%% Target=%.1f%%",
+                           charge_power, pv, house_load_w, inverter_limit_w, export_preference, soc, passive_auto_target_soc_setting);
+                } else if (reserve_active) {
+                  blo = 0;
+                  bup = 5000;
+
+                  publish_decision("Passive Auto - reserve protected, charge allowed");
+
+                  ESP_LOGI("passive_auto_reserve",
+                           "Near limit with no useful surplus → discharge blocked. SOC=%.1f%% Reserve=%.1f%%",
+                           soc, reserve_soc);
+                } else {
+                  blo = -5000;
+                  bup = 5000;
+
+                  publish_decision("Passive Auto - near limit but no useful surplus, released");
+
+                  ESP_LOGI("passive_auto",
+                           "Near limit but no useful charge → release. PV=%.0fW Load=%.0fW SOC=%.1f%%",
+                           pv, house_load_w, soc);
+                }
               }
+
+            } else if (reserve_active) {
+              blo = 0;
+              bup = 5000;
+
+              publish_decision("Passive Auto - minimum reserve protected, charge allowed");
+
+              ESP_LOGI("passive_auto_reserve",
+                       "Discharge blocked at reserve. SOC=%.1f%% Reserve=%.1f%% PV=%.0fW Load=%.0fW",
+                       soc, reserve_soc, pv, house_load_w);
 
             } else {
               bool pv_surplus = available_pv_after_load > surplus_threshold_w;
-              bool above_headroom_target = soc >= passive_auto_target_soc_setting;
+              float effective_headroom_target = std::max(passive_auto_target_soc_setting, reserve_soc);
+              bool above_headroom_target = soc >= effective_headroom_target;
 
               if (pv_surplus && above_headroom_target && !battery_full) {
                 if (recovery_enabled) {
@@ -910,7 +985,7 @@ interval:
 
                   ESP_LOGI("passive_auto",
                           "Recovery enabled above target → release for headroom recovery. PV=%.0fW Load=%.0fW Surplus=%.0fW SOC=%.1f%% Target=%.1f%%",
-                          pv, house_load_w, available_pv_after_load, soc, passive_auto_target_soc_setting);
+                          pv, house_load_w, available_pv_after_load, soc, effective_headroom_target);
                 } else {
                   blo = 0;
                   bup = 0;
@@ -919,7 +994,7 @@ interval:
 
                   ESP_LOGI("passive_auto",
                           "Recovery disabled above target → hold battery/export surplus. PV=%.0fW Load=%.0fW Surplus=%.0fW SOC=%.1f%% Target=%.1f%%",
-                          pv, house_load_w, available_pv_after_load, soc, passive_auto_target_soc_setting);
+                          pv, house_load_w, available_pv_after_load, soc, effective_headroom_target);
                 }
 
               } else {
@@ -931,7 +1006,7 @@ interval:
                 ESP_LOGI("passive_auto",
                          "Normal release. PV=%.0fW Load=%.0fW NearLimit=%s Surplus=%.0fW SOC=%.1f%% Target=%.1f%%",
                          pv, house_load_w, pv_near_limit ? "yes" : "no",
-                         available_pv_after_load, soc, passive_auto_target_soc_setting);
+                         available_pv_after_load, soc, effective_headroom_target);
               }
             }
           }
@@ -1000,12 +1075,16 @@ sensor:
             std::string mode_str;
             switch(val) {
               case 0: mode_str = "Self Use"; break;
-              case 1: mode_str = "Time-of-Use"; break;
+              case 1: mode_str = "Time Of Use"; break;
               case 3: mode_str = "Passive"; break;
               case 4: mode_str = "Peak Shaving"; break;
               default: mode_str = "Unknown"; break;
             }
             id(battery_mode_string).publish_state(mode_str);
+
+            if (mode_str != "Unknown") {
+              id(battery_inverter_mode_select).publish_state(mode_str);
+            }
     filters:
       - lambda: |-
           if (x > 4) {

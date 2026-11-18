@@ -12,5 +12,5 @@ jobs:
       - name: Validate and compile ESPHome configuration
         uses: esphome/build-action@v7
         with:
-          yaml_file: sofarsolar.yaml
+          yaml-file: sofarsolar.yaml
           version: stable

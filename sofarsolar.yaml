@@ -2242,7 +2242,6 @@ text_sensor:
 # Each entity contains 16 consecutive unsigned 16-bit words, encoded as HEXBYTES.
 # Hex pairs are in wire order (high byte then low byte). Do not write back raw values.
 # Existing passive control and Modbus writes above remain unchanged.
-text_sensor:
   - platform: modbus_controller
     modbus_controller_id: sofar_inverter
     name: "Generator Diagnostics 0x1100-0x110F"

@@ -1,0 +1,20 @@
+name: ESPHome compile
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Supply CI-only placeholder Wi-Fi credentials
+        run: |
+          sed -i 's/wifi_ssid: ""/wifi_ssid: "CI_TEST_NETWORK"/' sofarsolar.yaml
+          sed -i 's/wifi_password: ""/wifi_password: "CI_TEST_PASSWORD"/' sofarsolar.yaml
+      - name: Validate and compile ESPHome configuration
+        uses: esphome/build-action@v7
+        with:
+          yaml-file: sofarsolar.yaml
+          version: stable

@@ -1954,6 +1954,48 @@ sensor:
     internal: true
 
 
+# Published G3 Modbus v1.29 generator addresses; read-only diagnostics.
+# Firmware HYD 5000-EP V070006 compatibility remains to be verified.
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    id: gen_mode_register
+    name: "Generator Control Raw 0x10B8"
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x10B8
+    value_type: U_WORD
+    accuracy_decimals: 0
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    id: gen_peak_register
+    name: "Generator Peak Power Raw 0x10BA"
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x10BA
+    value_type: U_WORD
+    accuracy_decimals: 0
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    id: gen_soc_register
+    name: "Generator SOC Threshold Raw 0x10BD"
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x10BD
+    value_type: U_WORD
+    accuracy_decimals: 0
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    id: gen_contact_register
+    name: "Generator Dry Contact Raw 0x1064"
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1064
+    value_type: U_WORD
+    accuracy_decimals: 0
+
 text_sensor:
   - platform: homeassistant
     id: scheduled_charge_start_time
@@ -2237,420 +2279,17 @@ text_sensor:
     icon: mdi:alert-circle
 
 
-# Generator V070006 diagnostic readback — Modbus FC03 holding reads only.
-# Splitting 0x1120-0x118F into groups of four avoids one unsupported register
-# invalidating a whole 16-word group. Unreadable groups may still show Unknown.
-# ESPHome button captures the most recent values in logs; no new write controls.
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1100-0x110F"
-    id: gen_diag_1100
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1100
-    raw_encode: HEXBYTES
-    response_size: 32
-    register_count: 16
-    skip_updates: 3
 
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1110-0x111F"
-    id: gen_diag_1110
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1110
-    raw_encode: HEXBYTES
-    response_size: 32
-    register_count: 16
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1120-0x1123"
-    id: gen_diag_1120
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1120
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1124-0x1127"
-    id: gen_diag_1124
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1124
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1128-0x112B"
-    id: gen_diag_1128
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1128
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x112C-0x112F"
-    id: gen_diag_112c
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x112C
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1130-0x1133"
-    id: gen_diag_1130
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1130
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1134-0x1137"
-    id: gen_diag_1134
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1134
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1138-0x113B"
-    id: gen_diag_1138
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1138
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x113C-0x113F"
-    id: gen_diag_113c
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x113C
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1140-0x1143"
-    id: gen_diag_1140
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1140
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1144-0x1147"
-    id: gen_diag_1144
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1144
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1148-0x114B"
-    id: gen_diag_1148
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1148
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x114C-0x114F"
-    id: gen_diag_114c
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x114C
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1150-0x1153"
-    id: gen_diag_1150
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1150
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1154-0x1157"
-    id: gen_diag_1154
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1154
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1158-0x115B"
-    id: gen_diag_1158
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1158
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x115C-0x115F"
-    id: gen_diag_115c
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x115C
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1160-0x1163"
-    id: gen_diag_1160
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1160
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1164-0x1167"
-    id: gen_diag_1164
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1164
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1168-0x116B"
-    id: gen_diag_1168
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1168
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x116C-0x116F"
-    id: gen_diag_116c
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x116C
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1170-0x1173"
-    id: gen_diag_1170
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1170
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1174-0x1177"
-    id: gen_diag_1174
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1174
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1178-0x117B"
-    id: gen_diag_1178
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1178
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x117C-0x117F"
-    id: gen_diag_117c
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x117C
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1180-0x1183"
-    id: gen_diag_1180
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1180
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1184-0x1187"
-    id: gen_diag_1184
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1184
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1188-0x118B"
-    id: gen_diag_1188
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1188
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x118C-0x118F"
-    id: gen_diag_118c
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x118C
-    raw_encode: HEXBYTES
-    response_size: 8
-    register_count: 4
-    skip_updates: 3
-
-  - platform: modbus_controller
-    modbus_controller_id: sofar_inverter
-    name: "Generator Diagnostics 0x1190-0x119F"
-    id: gen_diag_1190
-    entity_category: diagnostic
-    register_type: holding
-    address: 0x1190
-    raw_encode: HEXBYTES
-    response_size: 32
-    register_count: 16
-    skip_updates: 3
-
-# Press this button after each state has remained steady long enough for reads to refresh.
-# Snapshots go to ESPHome logs (no extra RS485 traffic or writes).
+# Records the latest read-only values in ESPHome logs; does not send Modbus commands.
 button:
   - platform: template
     name: "Generator Diagnostics Log Snapshot"
     entity_category: diagnostic
     on_press:
       - lambda: |-
-          ESP_LOGI("gen_snapshot", "======== GENERATOR READ-ONLY SNAPSHOT ========");
-          ESP_LOGI("gen_snapshot", "0x1100-0x110F = %s", id(gen_diag_1100).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1110-0x111F = %s", id(gen_diag_1110).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1120-0x1123 = %s", id(gen_diag_1120).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1124-0x1127 = %s", id(gen_diag_1124).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1128-0x112B = %s", id(gen_diag_1128).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x112C-0x112F = %s", id(gen_diag_112c).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1130-0x1133 = %s", id(gen_diag_1130).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1134-0x1137 = %s", id(gen_diag_1134).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1138-0x113B = %s", id(gen_diag_1138).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x113C-0x113F = %s", id(gen_diag_113c).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1140-0x1143 = %s", id(gen_diag_1140).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1144-0x1147 = %s", id(gen_diag_1144).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1148-0x114B = %s", id(gen_diag_1148).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x114C-0x114F = %s", id(gen_diag_114c).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1150-0x1153 = %s", id(gen_diag_1150).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1154-0x1157 = %s", id(gen_diag_1154).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1158-0x115B = %s", id(gen_diag_1158).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x115C-0x115F = %s", id(gen_diag_115c).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1160-0x1163 = %s", id(gen_diag_1160).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1164-0x1167 = %s", id(gen_diag_1164).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1168-0x116B = %s", id(gen_diag_1168).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x116C-0x116F = %s", id(gen_diag_116c).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1170-0x1173 = %s", id(gen_diag_1170).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1174-0x1177 = %s", id(gen_diag_1174).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1178-0x117B = %s", id(gen_diag_1178).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x117C-0x117F = %s", id(gen_diag_117c).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1180-0x1183 = %s", id(gen_diag_1180).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1184-0x1187 = %s", id(gen_diag_1184).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1188-0x118B = %s", id(gen_diag_1188).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x118C-0x118F = %s", id(gen_diag_118c).state.c_str());
-          ESP_LOGI("gen_snapshot", "0x1190-0x119F = %s", id(gen_diag_1190).state.c_str());
-          ESP_LOGI("gen_snapshot", "======== END GENERATOR SNAPSHOT ========");
+          ESP_LOGI("gen_snapshot", "===== GENERATOR REGISTER SNAPSHOT =====");
+          ESP_LOGI("gen_snapshot", "0x10B8 = %.0f", id(gen_mode_register).state);
+          ESP_LOGI("gen_snapshot", "0x10BA = %.0f", id(gen_peak_register).state);
+          ESP_LOGI("gen_snapshot", "0x10BD = %.0f", id(gen_soc_register).state);
+          ESP_LOGI("gen_snapshot", "0x1064 = %.0f", id(gen_contact_register).state);
+          ESP_LOGI("gen_snapshot", "=======================================");

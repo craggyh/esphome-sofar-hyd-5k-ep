@@ -159,7 +159,7 @@ globals:
 
 
 number:
-  # Native queued Modbus FC06 writes. These remain internal; the guarded
+  # Native queued Modbus writes (FC16 for contact test; FC06 for manual start). These remain internal; the guarded
   # template switches below are the only intended test interface.
   - platform: modbus_controller
     id: gen_contact_write_number
@@ -171,7 +171,7 @@ number:
     min_value: 0
     max_value: 1
     step: 1
-    use_write_multiple: false
+    use_write_multiple: true
 
   - platform: modbus_controller
     id: gen_mode_write_number

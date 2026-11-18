@@ -159,6 +159,32 @@ globals:
 
 
 number:
+  # Native queued Modbus FC06 writes. These remain internal; the guarded
+  # template switches below are the only intended test interface.
+  - platform: modbus_controller
+    id: gen_contact_write_number
+    internal: true
+    modbus_controller_id: sofar_inverter
+    address: 0x1064
+    register_type: holding
+    value_type: U_WORD
+    min_value: 0
+    max_value: 1
+    step: 1
+    use_write_multiple: false
+
+  - platform: modbus_controller
+    id: gen_mode_write_number
+    internal: true
+    modbus_controller_id: sofar_inverter
+    address: 0x10B8
+    register_type: holding
+    value_type: U_WORD
+    min_value: 0
+    max_value: 2
+    step: 2
+    use_write_multiple: false
+
   - platform: template
     name: "Passive Auto Minimum Reserve SOC"
     id: passive_auto_min_reserve_soc
@@ -1040,7 +1066,7 @@ switch:
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
 
-  # TEST ONLY: single-register Modbus FC06 writes with immediate logging.
+  # TEST ONLY: native queued modbus_controller FC06 writes with readback.
   # Both switches read back the actual inverter register state. They are never
   # restored optimistically after reboot and do not run any automatic sequences.
   - platform: template
@@ -1060,7 +1086,7 @@ switch:
             return;
           }
           // 0x1064: 0=disabled, 1=generator dry-contact mode.
-          id(modbus1).send_raw({0x01, 0x06, 0x10, 0x64, 0x00, 0x01});
+          id(gen_contact_write_number).make_call().set_value(1).perform();
           ESP_LOGW("gen_write", "Requested 0x1064=1; verify readback and physical relay");
     turn_off_action:
       - lambda: |-
@@ -1069,7 +1095,7 @@ switch:
             ESP_LOGW("gen_write", "Refused contact disable: expected current register 1, got %.0f", value);
             return;
           }
-          id(modbus1).send_raw({0x01, 0x06, 0x10, 0x64, 0x00, 0x00});
+          id(gen_contact_write_number).make_call().set_value(0).perform();
           ESP_LOGW("gen_write", "Requested 0x1064=0; verify readback");
 
   - platform: template
@@ -1090,7 +1116,7 @@ switch:
           }
           // 0x10B8 bit 1 = manual start; 0 keeps auto and gen lock disabled.
           // WARNING: this changes inverter AC charging/relay operation.
-          id(modbus1).send_raw({0x01, 0x06, 0x10, 0xB8, 0x00, 0x02});
+          id(gen_mode_write_number).make_call().set_value(2).perform();
           ESP_LOGW("gen_write", "Requested Generator Manual Start (0x10B8=2); verify readback");
     turn_off_action:
       - lambda: |-
@@ -1099,7 +1125,7 @@ switch:
             ESP_LOGW("gen_write", "Refused manual disable: require mode 2, got %.0f", value);
             return;
           }
-          id(modbus1).send_raw({0x01, 0x06, 0x10, 0xB8, 0x00, 0x00});
+          id(gen_mode_write_number).make_call().set_value(0).perform();
           ESP_LOGW("gen_write", "Requested Generator Manual Disable (0x10B8=0); verify readback");
 
 sensor:

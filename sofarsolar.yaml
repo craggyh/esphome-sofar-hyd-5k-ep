@@ -1040,6 +1040,68 @@ switch:
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
 
+  # TEST ONLY: single-register Modbus FC06 writes with immediate logging.
+  # Both switches read back the actual inverter register state. They are never
+  # restored optimistically after reboot and do not run any automatic sequences.
+  - platform: template
+    name: "Generator Dry Contact Configuration (Test)"
+    id: gen_contact_test_switch
+    entity_category: config
+    lambda: |-
+      if (isnan(id(gen_contact_register).state)) return {};
+      uint16_t raw = (uint16_t) id(gen_contact_register).state;
+      if (raw > 3) return {};
+      return raw == 1;
+    turn_on_action:
+      - lambda: |-
+          float value = id(gen_contact_register).state;
+          if (isnan(value) || (uint16_t)value != 0) {
+            ESP_LOGW("gen_write", "Refused contact enable: expected current register 0, got %.0f", value);
+            return;
+          }
+          // 0x1064: 0=disabled, 1=generator dry-contact mode.
+          id(modbus1).send_raw({0x01, 0x06, 0x10, 0x64, 0x00, 0x01});
+          ESP_LOGW("gen_write", "Requested 0x1064=1; verify readback and physical relay");
+    turn_off_action:
+      - lambda: |-
+          float value = id(gen_contact_register).state;
+          if (isnan(value) || (uint16_t)value != 1) {
+            ESP_LOGW("gen_write", "Refused contact disable: expected current register 1, got %.0f", value);
+            return;
+          }
+          id(modbus1).send_raw({0x01, 0x06, 0x10, 0x64, 0x00, 0x00});
+          ESP_LOGW("gen_write", "Requested 0x1064=0; verify readback");
+
+  - platform: template
+    name: "Generator Manual Start (Test)"
+    id: gen_manual_test_switch
+    entity_category: config
+    lambda: |-
+      if (isnan(id(gen_mode_register).state)) return {};
+      uint16_t raw = (uint16_t) id(gen_mode_register).state;
+      if (raw > 7) return {};
+      return (raw & 0x0002) != 0;
+    turn_on_action:
+      - lambda: |-
+          float value = id(gen_mode_register).state;
+          if (isnan(value) || (uint16_t)value != 0) {
+            ESP_LOGW("gen_write", "Refused manual start: require mode 0 (no Auto/Gen Lock), got %.0f", value);
+            return;
+          }
+          // 0x10B8 bit 1 = manual start; 0 keeps auto and gen lock disabled.
+          // WARNING: this changes inverter AC charging/relay operation.
+          id(modbus1).send_raw({0x01, 0x06, 0x10, 0xB8, 0x00, 0x02});
+          ESP_LOGW("gen_write", "Requested Generator Manual Start (0x10B8=2); verify readback");
+    turn_off_action:
+      - lambda: |-
+          float value = id(gen_mode_register).state;
+          if (isnan(value) || (uint16_t)value != 2) {
+            ESP_LOGW("gen_write", "Refused manual disable: require mode 2, got %.0f", value);
+            return;
+          }
+          id(modbus1).send_raw({0x01, 0x06, 0x10, 0xB8, 0x00, 0x00});
+          ESP_LOGW("gen_write", "Requested Generator Manual Disable (0x10B8=0); verify readback");
+
 sensor:
   - platform: homeassistant
     id: scheduled_charge_start_hour

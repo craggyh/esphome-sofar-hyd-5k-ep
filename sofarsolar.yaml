@@ -2235,3 +2235,130 @@ text_sensor:
 
     #update_interval: 60s
     icon: mdi:alert-circle
+
+
+# Generator V070006 diagnostic readback (FC03 reads only).
+# Record all values with LCD Generator Control Disabled, Start, then Disabled.
+# Each entity contains 16 consecutive unsigned 16-bit words, encoded as HEXBYTES.
+# Hex pairs are in wire order (high byte then low byte). Do not write back raw values.
+# Existing passive control and Modbus writes above remain unchanged.
+text_sensor:
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1100-0x110F"
+    id: gen_diag_1100
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1100
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1110-0x111F"
+    id: gen_diag_1110
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1110
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1120-0x112F"
+    id: gen_diag_1120
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1120
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1130-0x113F"
+    id: gen_diag_1130
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1130
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1140-0x114F"
+    id: gen_diag_1140
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1140
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1150-0x115F"
+    id: gen_diag_1150
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1150
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1160-0x116F"
+    id: gen_diag_1160
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1160
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1170-0x117F"
+    id: gen_diag_1170
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1170
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1180-0x118F"
+    id: gen_diag_1180
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1180
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
+
+  - platform: modbus_controller
+    modbus_controller_id: sofar_inverter
+    name: "Generator Diagnostics 0x1190-0x119F"
+    id: gen_diag_1190
+    entity_category: diagnostic
+    register_type: holding
+    address: 0x1190
+    raw_encode: HEXBYTES
+    response_size: 32
+    register_count: 16
+    skip_updates: 3
